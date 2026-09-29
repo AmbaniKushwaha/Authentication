@@ -1,0 +1,516 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Login</title>
+
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Inter", Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+
+      background: linear-gradient(135deg, #0f172a, #1e1b4b);
+      color: #fff;
+    }
+
+    /* Animated background */
+    .background {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      z-index: -1;
+    }
+
+    .blob {
+      position: absolute;
+      width: 350px;
+      height: 350px;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.55;
+
+      animation: float 8s ease-in-out infinite alternate;
+    }
+
+    .blob:nth-child(1) {
+      background: #8b5cf6;
+      top: -100px;
+      left: -100px;
+    }
+
+    .blob:nth-child(2) {
+      background: #06b6d4;
+      right: -100px;
+      bottom: -100px;
+      animation-delay: 2s;
+    }
+
+    .blob:nth-child(3) {
+      background: #ec4899;
+      width: 200px;
+      height: 200px;
+      left: 45%;
+      top: 50%;
+      animation-delay: 4s;
+    }
+
+    @keyframes float {
+      from {
+        transform: translate(0, 0) scale(1);
+      }
+
+      to {
+        transform: translate(50px, -40px) scale(1.15);
+      }
+    }
+
+    /* Login container */
+    .login-container {
+      width: 100%;
+      max-width: 430px;
+      padding: 20px;
+
+      animation: cardEnter 0.8s ease forwards;
+    }
+
+    @keyframes cardEnter {
+      from {
+        opacity: 0;
+        transform: translateY(50px) scale(0.95);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    /* Card */
+    .login-card {
+      padding: 40px;
+
+      border-radius: 24px;
+
+      background: rgba(255, 255, 255, 0.09);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    /* Logo */
+    .logo {
+      width: 55px;
+      height: 55px;
+
+      margin: 0 auto 18px;
+
+      display: flex;
+      justify-content: center;
+      align-items: center;
+
+      border-radius: 16px;
+
+      font-size: 25px;
+      font-weight: 800;
+
+      background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+
+      box-shadow:
+        0 10px 30px rgba(139, 92, 246, 0.35);
+
+      animation: logoPulse 2.5s infinite;
+    }
+
+    @keyframes logoPulse {
+      0%, 100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.06);
+      }
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 30px;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      text-align: center;
+      color: #cbd5e1;
+      font-size: 14px;
+      margin-bottom: 30px;
+    }
+
+    /* Input */
+    .input-group {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    .input-group input {
+      width: 100%;
+
+      padding: 15px 16px;
+
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      outline: none;
+      border-radius: 12px;
+
+      background: rgba(255, 255, 255, 0.07);
+
+      color: #fff;
+      font-size: 15px;
+
+      transition: 0.3s ease;
+    }
+
+    .input-group input::placeholder {
+      color: transparent;
+    }
+
+    .input-group label {
+      position: absolute;
+
+      left: 16px;
+      top: 15px;
+
+      color: #94a3b8;
+
+      pointer-events: none;
+
+      transition: 0.25s ease;
+    }
+
+    .input-group input:focus,
+    .input-group input:not(:placeholder-shown) {
+      border-color: #8b5cf6;
+
+      box-shadow:
+        0 0 0 3px rgba(139, 92, 246, 0.12);
+    }
+
+    .input-group input:focus + label,
+    .input-group input:not(:placeholder-shown) + label {
+      top: -9px;
+      left: 12px;
+
+      padding: 0 5px;
+
+      font-size: 12px;
+      color: #a78bfa;
+
+      background: #211d4d;
+    }
+
+    /* Password toggle */
+    .password-toggle {
+      position: absolute;
+
+      right: 15px;
+      top: 14px;
+
+      cursor: pointer;
+      color: #94a3b8;
+
+      user-select: none;
+
+      transition: 0.2s;
+    }
+
+    .password-toggle:hover {
+      color: #fff;
+    }
+
+    /* Remember + Forgot */
+    .options {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+
+      margin: 5px 0 22px;
+
+      font-size: 13px;
+    }
+
+    .remember {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+
+      color: #94a3b8;
+    }
+
+    .remember input {
+      accent-color: #8b5cf6;
+    }
+
+    .forgot {
+      color: #a78bfa;
+      text-decoration: none;
+    }
+
+    .forgot:hover {
+      text-decoration: underline;
+    }
+
+    /* Login button */
+    .login-btn {
+      width: 100%;
+
+      padding: 15px;
+
+      border: none;
+      border-radius: 12px;
+
+      color: #fff;
+
+      font-size: 15px;
+      font-weight: 700;
+
+      cursor: pointer;
+
+      background: linear-gradient(
+        135deg,
+        #8b5cf6,
+        #06b6d4
+      );
+
+      transition: 0.3s ease;
+
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-btn:hover {
+      transform: translateY(-2px);
+
+      box-shadow:
+        0 12px 30px rgba(139, 92, 246, 0.35);
+    }
+
+    .login-btn:active {
+      transform: scale(0.98);
+    }
+
+    /* Button shine */
+    .login-btn::after {
+      content: "";
+
+      position: absolute;
+
+      top: 0;
+      left: -100%;
+
+      width: 70%;
+      height: 100%;
+
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,0.3),
+        transparent
+      );
+
+      transform: skewX(-20deg);
+
+      transition: 0.6s;
+    }
+
+    .login-btn:hover::after {
+      left: 130%;
+    }
+
+    /* Signup */
+    .signup {
+      text-align: center;
+
+      margin-top: 25px;
+
+      font-size: 14px;
+
+      color: #94a3b8;
+    }
+
+    .signup a {
+      color: #a78bfa;
+
+      text-decoration: none;
+
+      font-weight: 600;
+    }
+
+    .signup a:hover {
+      text-decoration: underline;
+    }
+
+    /* Mobile */
+    @media (max-width: 480px) {
+      .login-card {
+        padding: 30px 22px;
+      }
+
+      h1 {
+        font-size: 26px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Animated background -->
+  <div class="background">
+    <div class="blob"></div>
+    <div class="blob"></div>
+    <div class="blob"></div>
+  </div>
+
+  <div class="login-container">
+
+    <div class="login-card">
+
+      <!-- Logo -->
+      <div class="logo">
+        S
+      </div>
+
+      <h1>Welcome Back</h1>
+
+      <p class="subtitle">
+        Login to continue to your account.
+      </p>
+
+      <!-- Login Form -->
+      <form action="/login" method="POST">
+
+        <!-- Email -->
+        <div class="input-group">
+
+          <input
+            type="email"
+            id="email"
+            name="email"
+            placeholder=" "
+            autocomplete="email"
+            required
+          >
+
+          <label for="email">
+            Email Address
+          </label>
+
+        </div>
+
+        <!-- Password -->
+        <div class="input-group">
+
+          <input
+            type="password"
+            id="password"
+            name="password"
+            placeholder=" "
+            autocomplete="current-password"
+            required
+          >
+
+          <label for="password">
+            Password
+          </label>
+
+          <span
+            class="password-toggle"
+            onclick="togglePassword()"
+            id="toggleIcon"
+          >
+            👁
+          </span>
+
+        </div>
+
+        <!-- Options -->
+        <div class="options">
+
+          <label class="remember">
+            <input
+              type="checkbox"
+              name="remember"
+            >
+
+            Remember me
+          </label>
+
+          <a
+            href="/forgot-password"
+            class="forgot"
+          >
+            Forgot password?
+          </a>
+
+        </div>
+
+        <!-- Button -->
+        <button
+          type="submit"
+          class="login-btn"
+        >
+          Login
+        </button>
+
+      </form>
+
+      <!-- Signup -->
+      <p class="signup">
+        Don't have an account?
+        <a href="/signup">
+          Create account
+        </a>
+      </p>
+
+    </div>
+
+  </div>
+
+  <script>
+    function togglePassword() {
+
+      const password =
+        document.getElementById("password");
+
+      const icon =
+        document.getElementById("toggleIcon");
+
+      if (password.type === "password") {
+
+        password.type = "text";
+        icon.textContent = "🙈";
+
+      } else {
+
+        password.type = "password";
+        icon.textContent = "👁";
+
+      }
+    }
+  </script>
+
+</body>
+</html>

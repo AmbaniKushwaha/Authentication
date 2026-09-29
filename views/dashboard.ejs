@@ -1,0 +1,515 @@
+<%
+  const profile = (typeof user !== "undefined" && user) ? user : {};
+  const displayName = profile.name || "Alex Morgan";
+  const email = profile.email || "alex@example.com";
+  const role = profile.role || "Member";
+  const status = profile.status || "Active";
+  const joinedDate = profile.joinedDate || "Recently";
+  const avatar = profile.avatar || "";
+  const initials = displayName.split(/\s+/).map(part => part[0]).join("").slice(0, 2).toUpperCase();
+%>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f172a">
+  <title>Dashboard · Luma</title>
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0f172a;
+      --panel: rgba(255, 255, 255, 0.065);
+      --border: rgba(255, 255, 255, 0.11);
+      --muted: #a5aec3;
+      --text: #f8fafc;
+      --purple: #a78bfa;
+      --cyan: #67e8f9;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      color: var(--text);
+      background: linear-gradient(135deg, #0f172a, #171538 55%, #102637);
+      font: 15px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    }
+
+    a { color: inherit; text-decoration: none; }
+    button { font: inherit; }
+    .background {
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      overflow: hidden;
+      pointer-events: none;
+    }
+    .orb {
+      position: absolute;
+      width: 360px;
+      height: 360px;
+      border-radius: 50%;
+      filter: blur(95px);
+      opacity: .22;
+      animation: drift 14s ease-in-out infinite alternate;
+    }
+    .orb.purple { background: #8b5cf6; top: -180px; left: 18%; }
+    .orb.cyan { background: #06b6d4; right: -180px; bottom: -170px; animation-delay: -5s; }
+    @keyframes drift {
+      to { transform: translate(45px, 30px) scale(1.12); }
+    }
+
+    .layout { min-height: 100vh; }
+    .sidebar {
+      position: fixed;
+      inset: 0 auto 0 0;
+      z-index: 5;
+      display: flex;
+      width: 248px;
+      flex-direction: column;
+      padding: 26px 18px;
+      border-right: 1px solid var(--border);
+      background: rgba(10, 14, 31, .68);
+      backdrop-filter: blur(22px);
+      transition: transform .25s ease;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      margin: 2px 10px 38px;
+      font-size: 19px;
+      font-weight: 750;
+      letter-spacing: -.04em;
+    }
+    .brand-mark {
+      display: grid;
+      width: 34px;
+      height: 34px;
+      place-items: center;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #8b5cf6, #06b6d4);
+      box-shadow: 0 6px 24px #8b5cf644;
+    }
+    .nav-label {
+      margin: 0 10px 10px;
+      color: #758098;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    .nav { display: grid; gap: 6px; }
+    .nav a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 12px;
+      border: 1px solid transparent;
+      border-radius: 12px;
+      color: #aeb7cb;
+      transition: background .2s ease, color .2s ease, transform .2s ease;
+    }
+    .nav a:hover, .nav a[aria-current="page"] {
+      color: #fff;
+      background: linear-gradient(100deg, rgba(139, 92, 246, .2), rgba(6, 182, 212, .08));
+      border-color: rgba(167, 139, 250, .18);
+    }
+    .nav a:hover { transform: translateX(2px); }
+    .nav-icon { width: 21px; text-align: center; font-size: 17px; }
+    .sidebar-bottom { margin-top: auto; }
+    .help-card {
+      padding: 15px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(255,255,255,.045);
+    }
+    .help-card p { margin: 5px 0 12px; color: var(--muted); font-size: 13px; }
+    .help-card a { color: var(--cyan); font-size: 13px; font-weight: 650; }
+
+    .main { min-height: 100vh; margin-left: 248px; }
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 3;
+      display: flex;
+      min-height: 76px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px clamp(20px, 4vw, 48px);
+      border-bottom: 1px solid var(--border);
+      background: rgba(15, 23, 42, .6);
+      backdrop-filter: blur(18px);
+    }
+    .topbar h1 { margin: 0; font-size: 18px; font-weight: 650; }
+    .topbar-right { display: flex; align-items: center; gap: 16px; }
+    .today { color: var(--muted); font-size: 13px; }
+    .user-chip { display: flex; align-items: center; gap: 10px; }
+    .user-chip span { font-size: 13px; font-weight: 600; }
+    .avatar {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      place-items: center;
+      overflow: hidden;
+      border: 1px solid rgba(255,255,255,.22);
+      border-radius: 50%;
+      color: white;
+      background: linear-gradient(135deg, #8b5cf6, #0891b2);
+      font-size: 13px;
+      font-weight: 700;
+      object-fit: cover;
+    }
+    .menu-toggle {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      color: white;
+      background: var(--panel);
+      cursor: pointer;
+    }
+
+    .content { width: min(1180px, 100%); margin: 0 auto; padding: 34px clamp(20px, 4vw, 48px) 48px; }
+    .welcome {
+      position: relative;
+      display: flex;
+      min-height: 176px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      overflow: hidden;
+      padding: 30px clamp(22px, 4vw, 40px);
+      border: 1px solid rgba(167, 139, 250, .2);
+      border-radius: 22px;
+      background: linear-gradient(110deg, rgba(124, 58, 237, .22), rgba(8, 145, 178, .12)), var(--panel);
+      box-shadow: 0 18px 60px rgba(0,0,0,.14);
+      animation: rise .65s ease both;
+    }
+    .welcome::after {
+      position: absolute;
+      top: -110px;
+      right: 8%;
+      width: 280px;
+      height: 280px;
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 50%;
+      box-shadow: 0 0 0 32px rgba(255,255,255,.025), 0 0 0 64px rgba(255,255,255,.02);
+      content: "";
+    }
+    .eyebrow { color: var(--cyan); font-size: 12px; font-weight: 700; letter-spacing: .11em; text-transform: uppercase; }
+    .welcome h2 { margin: 7px 0; font-size: clamp(24px, 3vw, 34px); letter-spacing: -.04em; }
+    .welcome p { margin: 0; color: #c2c9d8; }
+    .welcome .welcome-avatar { z-index: 1; width: 76px; height: 76px; font-size: 22px; }
+
+    .section-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 30px 0 14px; }
+    .section-heading h2 { margin: 0; font-size: 17px; }
+    .section-heading p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+
+    .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+    .panel, .stat-card {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--panel);
+      backdrop-filter: blur(18px);
+      box-shadow: 0 14px 40px rgba(0,0,0,.1);
+    }
+    .stat-card { padding: 19px 20px; animation: rise .65s ease both; }
+    .stat-card:nth-child(2) { animation-delay: .08s; }
+    .stat-card:nth-child(3) { animation-delay: .16s; }
+    .stat-top { display: flex; align-items: center; justify-content: space-between; color: var(--muted); font-size: 13px; }
+    .stat-icon {
+      display: grid;
+      width: 36px;
+      height: 36px;
+      place-items: center;
+      border-radius: 11px;
+      color: var(--cyan);
+      background: rgba(6, 182, 212, .12);
+    }
+    .stat-card:nth-child(2) .stat-icon { color: var(--purple); background: rgba(139, 92, 246, .15); }
+    .stat-card:nth-child(3) .stat-icon { color: #86efac; background: rgba(34, 197, 94, .12); }
+    .stat-value { margin-top: 11px; font-size: 25px; font-weight: 720; letter-spacing: -.04em; }
+    .stat-note { margin-top: 3px; color: #8993a9; font-size: 12px; }
+
+    .lower-grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, .95fr); gap: 16px; }
+    .panel { padding: 22px; }
+    .panel h2 { margin: 0; font-size: 16px; }
+    .panel-subtitle { margin: 4px 0 18px; color: var(--muted); font-size: 13px; }
+    .profile-head { display: flex; align-items: center; gap: 14px; padding-bottom: 19px; border-bottom: 1px solid var(--border); }
+    .profile-head .avatar { width: 52px; height: 52px; font-size: 16px; }
+    .profile-head h3 { margin: 0; font-size: 16px; }
+    .profile-head p { margin: 3px 0 0; color: var(--muted); font-size: 13px; }
+    .details { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 14px; padding: 20px 0; }
+    .detail-label { display: block; margin-bottom: 4px; color: #8993a9; font-size: 11px; letter-spacing: .07em; text-transform: uppercase; }
+    .detail-value { overflow-wrap: anywhere; font-size: 13px; font-weight: 550; }
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 9px;
+      border: 1px solid rgba(74, 222, 128, .2);
+      border-radius: 99px;
+      color: #86efac;
+      background: rgba(34, 197, 94, .1);
+      font-size: 12px;
+    }
+    .status::before { width: 6px; height: 6px; border-radius: 50%; background: currentColor; content: ""; }
+    .actions { display: flex; flex-wrap: wrap; gap: 9px; }
+    .button {
+      display: inline-flex;
+      min-height: 39px;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 13px;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: #e8eaf2;
+      background: rgba(255,255,255,.055);
+      font-size: 13px;
+      font-weight: 600;
+      transition: transform .2s ease, background .2s ease;
+    }
+    .button:hover { transform: translateY(-1px); background: rgba(255,255,255,.1); }
+    .button.primary { border-color: transparent; color: #100e24; background: linear-gradient(110deg, #c4b5fd, #67e8f9); }
+    .button.danger { color: #fda4af; }
+    .activity-list { display: grid; gap: 0; }
+    .activity {
+      display: grid;
+      grid-template-columns: 36px 1fr auto;
+      align-items: center;
+      gap: 11px;
+      padding: 13px 0;
+      border-bottom: 1px solid rgba(255,255,255,.07);
+    }
+    .activity:last-child { border-bottom: 0; padding-bottom: 0; }
+    .activity-icon { display: grid; width: 34px; height: 34px; place-items: center; border-radius: 10px; background: rgba(139,92,246,.14); }
+    .activity:nth-child(2) .activity-icon { background: rgba(6,182,212,.13); }
+    .activity:nth-child(3) .activity-icon { background: rgba(34,197,94,.12); }
+    .activity strong { display: block; font-size: 13px; font-weight: 600; }
+    .activity small { color: var(--muted); font-size: 12px; }
+    .activity time { color: #8993a9; font-size: 11px; white-space: nowrap; }
+    .scrim { display: none; }
+
+    @keyframes rise { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+    }
+    @media (max-width: 1050px) {
+      .sidebar { width: 220px; }
+      .main { margin-left: 220px; }
+      .lower-grid { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 760px) {
+      .sidebar { transform: translateX(-100%); width: 270px; }
+      .sidebar.open { transform: translateX(0); }
+      .main { margin-left: 0; }
+      .menu-toggle { display: inline-grid; place-items: center; }
+      .topbar { justify-content: flex-start; }
+      .topbar-right { margin-left: auto; }
+      .today, .user-chip span { display: none; }
+      .scrim.visible { position: fixed; inset: 0; z-index: 4; display: block; background: rgba(2,6,23,.62); }
+      .content { padding-top: 24px; }
+    }
+    @media (max-width: 560px) {
+      .welcome { min-height: 155px; padding: 24px 20px; }
+      .welcome .welcome-avatar { width: 54px; height: 54px; font-size: 16px; }
+      .stats { grid-template-columns: 1fr; gap: 10px; }
+      .stat-card { padding: 15px 17px; }
+      .stat-value { margin-top: 5px; }
+      .panel { padding: 18px; }
+      .details { gap: 15px 10px; }
+      .activity { grid-template-columns: 34px 1fr; }
+      .activity time { grid-column: 2; margin-top: -8px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="background" aria-hidden="true">
+    <div class="orb purple"></div>
+    <div class="orb cyan"></div>
+  </div>
+
+  <div class="layout">
+    <aside class="sidebar" id="sidebar" aria-label="Main navigation">
+      <a class="brand" href="/dashboard" aria-label="Luma dashboard">
+        <span class="brand-mark" aria-hidden="true">✦</span>
+        <span>Luma</span>
+      </a>
+
+      <p class="nav-label">Workspace</p>
+      <nav class="nav">
+        <a href="/dashboard" aria-current="page"><span class="nav-icon" aria-hidden="true">▦</span>Overview</a>
+        <a href="/profile"><span class="nav-icon" aria-hidden="true">◎</span>My profile</a>
+        <a href="/activity"><span class="nav-icon" aria-hidden="true">↗</span>Activity</a>
+        <a href="/settings"><span class="nav-icon" aria-hidden="true">⚙</span>Settings</a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="help-card">
+          <strong>Need a hand?</strong>
+          <p>Find answers or get in touch with our team.</p>
+          <a href="/support">Visit support →</a>
+        </div>
+        <nav class="nav" style="margin-top: 15px" aria-label="Account">
+          <a href="/logout"><span class="nav-icon" aria-hidden="true">↪</span>Log out</a>
+        </nav>
+      </div>
+    </aside>
+
+    <button class="scrim" id="scrim" aria-label="Close navigation"></button>
+
+    <main class="main">
+      <header class="topbar">
+        <button class="menu-toggle" id="menuToggle" aria-label="Open navigation" aria-expanded="false" aria-controls="sidebar">☰</button>
+        <h1>Dashboard</h1>
+        <div class="topbar-right">
+          <span class="today" id="today"></span>
+          <div class="user-chip">
+            <% if (avatar) { %>
+              <img class="avatar" src="<%= avatar %>" alt="" referrerpolicy="no-referrer">
+            <% } else { %>
+              <span class="avatar" aria-hidden="true"><%= initials %></span>
+            <% } %>
+            <span><%= displayName %></span>
+          </div>
+        </div>
+      </header>
+
+      <div class="content">
+        <section class="welcome" aria-labelledby="welcomeTitle">
+          <div>
+            <span class="eyebrow">Your account at a glance</span>
+            <h2 id="welcomeTitle">Welcome back, <%= displayName.split(/\s+/)[0] %> 👋</h2>
+            <p>Here’s what’s happening with your account today.</p>
+          </div>
+          <% if (avatar) { %>
+            <img class="avatar welcome-avatar" src="<%= avatar %>" alt="" referrerpolicy="no-referrer">
+          <% } else { %>
+            <span class="avatar welcome-avatar" aria-hidden="true"><%= initials %></span>
+          <% } %>
+        </section>
+
+        <section aria-labelledby="statsTitle">
+          <div class="section-heading">
+            <div>
+              <h2 id="statsTitle">Your overview</h2>
+              <p>A quick look at your account</p>
+            </div>
+          </div>
+          <div class="stats">
+            <article class="stat-card">
+              <div class="stat-top"><span>Account status</span><span class="stat-icon" aria-hidden="true">✓</span></div>
+              <div class="stat-value"><%= status %></div>
+              <div class="stat-note">Your account is in good standing</div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-top"><span>Member since</span><span class="stat-icon" aria-hidden="true">◷</span></div>
+              <div class="stat-value"><%= joinedDate %></div>
+              <div class="stat-note">Thanks for being with us</div>
+            </article>
+            <article class="stat-card">
+              <div class="stat-top"><span>Account role</span><span class="stat-icon" aria-hidden="true">✦</span></div>
+              <div class="stat-value"><%= role %></div>
+              <div class="stat-note">Your current access level</div>
+            </article>
+          </div>
+        </section>
+
+        <div class="section-heading">
+          <div>
+            <h2>Account details</h2>
+            <p>Manage your profile and keep up with recent activity</p>
+          </div>
+        </div>
+
+        <div class="lower-grid">
+          <section class="panel" aria-labelledby="profileTitle">
+            <h2 id="profileTitle">Profile information</h2>
+            <p class="panel-subtitle">Your personal account details</p>
+
+            <div class="profile-head">
+              <% if (avatar) { %>
+                <img class="avatar" src="<%= avatar %>" alt="" referrerpolicy="no-referrer">
+              <% } else { %>
+                <span class="avatar" aria-hidden="true"><%= initials %></span>
+              <% } %>
+              <div>
+                <h3><%= displayName %></h3>
+                <p><%= email %></p>
+              </div>
+            </div>
+
+            <dl class="details">
+              <div><dt class="detail-label">Full name</dt><dd class="detail-value"><%= displayName %></dd></div>
+              <div><dt class="detail-label">Email address</dt><dd class="detail-value"><%= email %></dd></div>
+              <div><dt class="detail-label">Role</dt><dd class="detail-value"><%= role %></dd></div>
+              <div><dt class="detail-label">Account status</dt><dd class="detail-value"><span class="status"><%= status %></span></dd></div>
+              <div><dt class="detail-label">Joined</dt><dd class="detail-value"><%= joinedDate %></dd></div>
+            </dl>
+
+            <div class="actions">
+              <a class="button primary" href="/profile/edit">Edit profile</a>
+              <a class="button" href="/settings">Account settings</a>
+              <a class="button danger" href="/logout">Log out</a>
+            </div>
+          </section>
+
+          <section class="panel" aria-labelledby="activityTitle">
+            <h2 id="activityTitle">Recent activity</h2>
+            <p class="panel-subtitle">A few updates from your account</p>
+
+            <div class="activity-list">
+              <article class="activity">
+                <span class="activity-icon" aria-hidden="true">✦</span>
+                <div><strong>Welcome to Luma</strong><small>Your account is ready to go</small></div>
+                <time datetime=""><%= joinedDate %></time>
+              </article>
+              <article class="activity">
+                <span class="activity-icon" aria-hidden="true">◎</span>
+                <div><strong>Profile created</strong><small>Your profile details were added</small></div>
+                <time>Recently</time>
+              </article>
+              <article class="activity">
+                <span class="activity-icon" aria-hidden="true">✓</span>
+                <div><strong>Account is <%= status.toLowerCase() %></strong><small>Your access is up to date</small></div>
+                <time>Now</time>
+              </article>
+            </div>
+          </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const sidebar = document.getElementById("sidebar");
+    const menuToggle = document.getElementById("menuToggle");
+    const scrim = document.getElementById("scrim");
+
+    function setMenuOpen(open) {
+      sidebar.classList.toggle("open", open);
+      scrim.classList.toggle("visible", open);
+      menuToggle.setAttribute("aria-expanded", String(open));
+      menuToggle.setAttribute("aria-label", open ? "Close navigation" : "Open navigation");
+    }
+
+    menuToggle.addEventListener("click", () => {
+      setMenuOpen(!sidebar.classList.contains("open"));
+    });
+    scrim.addEventListener("click", () => setMenuOpen(false));
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape") setMenuOpen(false);
+    });
+
+    document.getElementById("today").textContent =
+      new Intl.DateTimeFormat(undefined, { weekday: "short", month: "short", day: "numeric" }).format(new Date());
+  </script>
+</body>
+</html>
